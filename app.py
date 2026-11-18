@@ -111,7 +111,6 @@ with tab1:
         try:
             current_press = (atmos_pres * 1000.0) if "SI" in unit_system else atmos_pres
             
-            # Robust calculation paths avoiding pressure boundary collisions
             if input_mode == "Dry-Bulb & Relative Humidity":
                 tdp = psychrolib.GetTDewPointFromRelHum(tdb, rh_frac)
                 hum_ratio = psychrolib.GetHumRatioFromRelHum(tdb, rh_frac, current_press)
@@ -119,7 +118,7 @@ with tab1:
                 enthalpy = psychrolib.GetMoistAirEnthalpy(tdb, hum_ratio)
                 density = psychrolib.GetMoistAirDensity(tdb, hum_ratio, current_press)
                 v_vol = (1.0 / density) if density > 0 else 0
-                vapor_p = psychrolib.GetVaporPressureFromRelHum(tdb, rh_frac)
+                vapor_p = psychrolib.GetVaporPressureFromHumRatio(hum_ratio, current_press)
                 if "SI" in unit_system: vapor_p /= 1000.0
                 
             elif input_mode == "Dry-Bulb & Wet-Bulb":
@@ -129,7 +128,7 @@ with tab1:
                 enthalpy = psychrolib.GetMoistAirEnthalpy(tdb, hum_ratio)
                 density = psychrolib.GetMoistAirDensity(tdb, hum_ratio, current_press)
                 v_vol = (1.0 / density) if density > 0 else 0
-                vapor_p = psychrolib.GetVaporPressureFromRelHum(tdb, rh_frac)
+                vapor_p = psychrolib.GetVaporPressureFromHumRatio(hum_ratio, current_press)
                 if "SI" in unit_system: vapor_p /= 1000.0
                 
             else:
@@ -140,7 +139,7 @@ with tab1:
                 enthalpy = psychrolib.GetMoistAirEnthalpy(tdb, hum_ratio)
                 density = psychrolib.GetMoistAirDensity(tdb, hum_ratio, current_press)
                 v_vol = (1.0 / density) if density > 0 else 0
-                vapor_p = psychrolib.GetVaporPressureFromRelHum(tdb, rh_frac)
+                vapor_p = psychrolib.GetVaporPressureFromHumRatio(hum_ratio, current_press)
                 if "SI" in unit_system: vapor_p /= 1000.0
 
             st.markdown("### 📋 Computed Psychrometric State")
