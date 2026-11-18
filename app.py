@@ -111,10 +111,11 @@ with tab1:
         try:
             current_press = (atmos_pres * 1000.0) if "SI" in unit_system else atmos_pres
             
+            # Robust calculation paths avoiding pressure boundary collisions
             if input_mode == "Dry-Bulb & Relative Humidity":
-                twb = psychrolib.GetTWetBulbFromRelHum(tdb, rh_frac, current_press)
                 tdp = psychrolib.GetTDewPointFromRelHum(tdb, rh_frac)
                 hum_ratio = psychrolib.GetHumRatioFromRelHum(tdb, rh_frac, current_press)
+                twb = psychrolib.GetTWetBulbFromRelHum(tdb, rh_frac, current_press)
                 enthalpy = psychrolib.GetMoistAirEnthalpy(tdb, hum_ratio)
                 density = psychrolib.GetMoistAirDensity(tdb, hum_ratio, current_press)
                 v_vol = (1.0 / density) if density > 0 else 0
@@ -123,23 +124,23 @@ with tab1:
                 
             elif input_mode == "Dry-Bulb & Wet-Bulb":
                 rh_frac = psychrolib.GetRelHumFromTWetBulb(tdb, twb, current_press)
-                tdp = psychrolib.GetTDewPointFromTWetBulb(tdb, twb, current_press)
+                tdp = psychrolib.GetTDewPointFromRelHum(tdb, rh_frac)
                 hum_ratio = psychrolib.GetHumRatioFromTWetBulb(tdb, twb, current_press)
                 enthalpy = psychrolib.GetMoistAirEnthalpy(tdb, hum_ratio)
                 density = psychrolib.GetMoistAirDensity(tdb, hum_ratio, current_press)
                 v_vol = (1.0 / density) if density > 0 else 0
-                vapor_p = psychrolib.GetVaporPressureFromHumRatio(hum_ratio, current_press)
+                vapor_p = psychrolib.GetVaporPressureFromRelHum(tdb, rh_frac)
                 if "SI" in unit_system: vapor_p /= 1000.0
                 
             else:
                 rh_frac = psychrolib.GetRelHumFromTDewPoint(tdb, tdp_input)
-                twb = psychrolib.GetTWetBulbFromRelHum(tdb, rh_frac, current_press)
                 tdp = tdp_input
                 hum_ratio = psychrolib.GetHumRatioFromTDewPoint(tdp)
+                twb = psychrolib.GetTWetBulbFromRelHum(tdb, rh_frac, current_press)
                 enthalpy = psychrolib.GetMoistAirEnthalpy(tdb, hum_ratio)
                 density = psychrolib.GetMoistAirDensity(tdb, hum_ratio, current_press)
                 v_vol = (1.0 / density) if density > 0 else 0
-                vapor_p = psychrolib.GetVaporPressureFromHumRatio(hum_ratio, current_press)
+                vapor_p = psychrolib.GetVaporPressureFromRelHum(tdb, rh_frac)
                 if "SI" in unit_system: vapor_p /= 1000.0
 
             st.markdown("### 📋 Computed Psychrometric State")
