@@ -67,17 +67,17 @@ if "SI" in unit_system:
     psychrolib.SetUnitSystem(psychrolib.SI)
     temp_unit = "°C"
     pres_unit = "kPa"
-    hum_unit = "kg_w / kg_da"
-    enthalpy_unit = "kJ / kg_da"
-    vol_unit = "m³ / kg_da"
+    hum_unit = "kg water / kg dry air"
+    enthalpy_unit = "kJ / kg dry air"
+    vol_unit = "m³ / kg dry air"
     default_pres = 101.325
 else:
     psychrolib.SetUnitSystem(psychrolib.IP)
     temp_unit = "°F"
     pres_unit = "psi"
-    hum_unit = "lb_w / lb_da"
-    enthalpy_unit = "BTU / lb_da"
-    vol_unit = "ft³ / lb_da"
+    hum_unit = "lb water / lb dry air"
+    enthalpy_unit = "BTU / lb dry air"
+    vol_unit = "ft³ / lb dry air"
     default_pres = 14.696
 
 st.sidebar.markdown("---")
@@ -96,16 +96,16 @@ with tab1:
     col1, col2 = st.columns(2)
     
     with col1:
-        tdb = st.number_input(f"Dry-Bulb Temperature ($T_{{db}}$) [{temp_unit}]", value=25.0 if "SI" in unit_system else 77.0, step=0.5)
+        tdb = st.number_input(f"Dry-Bulb Temperature (Tdb) [{temp_unit}]", value=25.0 if "SI" in unit_system else 77.0, step=0.5)
         
     with col2:
         if input_mode == "Dry-Bulb & Relative Humidity":
             rh_input = st.slider("Relative Humidity (RH)", 0.0, 100.0, 50.0, 1.0)
             rh_frac = rh_input / 100.0
         elif input_mode == "Dry-Bulb & Wet-Bulb":
-            twb = st.number_input(f"Wet-Bulb Temperature ($T_{{wb}}$) [{temp_unit}]", value=20.0 if "SI" in unit_system else 68.0, step=0.5)
+            twb = st.number_input(f"Wet-Bulb Temperature (Twb) [{temp_unit}]", value=20.0 if "SI" in unit_system else 68.0, step=0.5)
         else:
-            tdp_input = st.number_input(f"Dew-Point Temperature ($T_{{dp}}$) [{temp_unit}]", value=15.0 if "SI" in unit_system else 59.0, step=0.5)
+            tdp_input = st.number_input(f"Dew-Point Temperature (Tdp) [{temp_unit}]", value=15.0 if "SI" in unit_system else 59.0, step=0.5)
 
     if st.button("Calculate Properties"):
         try:
@@ -116,6 +116,7 @@ with tab1:
                 hum_ratio = psychrolib.GetHumRatioFromRelHum(tdb, rh_frac, current_press)
                 twb = psychrolib.GetTWetBulbFromRelHum(tdb, rh_frac, current_press)
                 enthalpy = psychrolib.GetMoistAirEnthalpy(tdb, hum_ratio)
+                if "SI" in unit_system: enthalpy /= 1000.0 # Convert J/kg to kJ/kg
                 density = psychrolib.GetMoistAirDensity(tdb, hum_ratio, current_press)
                 v_vol = (1.0 / density) if density > 0 else 0
                 vapor_p = psychrolib.GetVapPresFromHumRatio(hum_ratio, current_press)
@@ -126,6 +127,7 @@ with tab1:
                 tdp = psychrolib.GetTDewPointFromRelHum(tdb, rh_frac)
                 hum_ratio = psychrolib.GetHumRatioFromTWetBulb(tdb, twb, current_press)
                 enthalpy = psychrolib.GetMoistAirEnthalpy(tdb, hum_ratio)
+                if "SI" in unit_system: enthalpy /= 1000.0
                 density = psychrolib.GetMoistAirDensity(tdb, hum_ratio, current_press)
                 v_vol = (1.0 / density) if density > 0 else 0
                 vapor_p = psychrolib.GetVapPresFromHumRatio(hum_ratio, current_press)
@@ -137,6 +139,7 @@ with tab1:
                 hum_ratio = psychrolib.GetHumRatioFromTDewPoint(tdp, current_press)
                 twb = psychrolib.GetTWetBulbFromRelHum(tdb, rh_frac, current_press)
                 enthalpy = psychrolib.GetMoistAirEnthalpy(tdb, hum_ratio)
+                if "SI" in unit_system: enthalpy /= 1000.0
                 density = psychrolib.GetMoistAirDensity(tdb, hum_ratio, current_press)
                 v_vol = (1.0 / density) if density > 0 else 0
                 vapor_p = psychrolib.GetVapPresFromHumRatio(hum_ratio, current_press)
@@ -152,34 +155,34 @@ with tab1:
                 </div>''', unsafe_allow_html=True)
             with r2:
                 st.markdown(f'''<div class="metric-card">
-                    <b>Wet-Bulb Temp ($T_{{wb}}$)</b><br>
+                    <b>Wet-Bulb Temp (Twb)</b><br>
                     <span style="font-size: 1.5rem; color:#9A3412;">{twb:.2f}</span> {temp_unit}
                 </div>''', unsafe_allow_html=True)
             with r3:
                 st.markdown(f'''<div class="metric-card">
-                    <b>Dew-Point ($T_{{dp}}$)</b><br>
+                    <b>Dew-Point (Tdp)</b><br>
                     <span style="font-size: 1.5rem; color:#9A3412;">{tdp:.2f}</span> {temp_unit}
                 </div>''', unsafe_allow_html=True)
             with r4:
                 st.markdown(f'''<div class="metric-card">
-                    <b>Humidity Ratio ($W$)</b><br>
-                    <span style="font-size: 1.2rem; color:#9A3412;">{hum_ratio:.5f}</span> {hum_unit}
+                    <b>Humidity Ratio (W)</b><br>
+                    <span style="font-size: 1.1rem; color:#9A3412;">{hum_ratio:.5f}</span><br><span style="font-size:0.75rem;">{hum_unit}</span>
                 </div>''', unsafe_allow_html=True)
 
             r5, r6, r7 = st.columns(3)
             with r5:
                 st.markdown(f'''<div class="metric-card">
-                    <b>Specific Enthalpy ($h$)</b><br>
+                    <b>Specific Enthalpy (h)</b><br>
                     <span style="font-size: 1.4rem; color:#9A3412;">{enthalpy:.2f}</span> {enthalpy_unit}
                 </div>''', unsafe_allow_html=True)
             with r6:
                 st.markdown(f'''<div class="metric-card">
-                    <b>Specific Volume ($v$)</b><br>
+                    <b>Specific Volume (v)</b><br>
                     <span style="font-size: 1.4rem; color:#9A3412;">{v_vol:.4f}</span> {vol_unit}
                 </div>''', unsafe_allow_html=True)
             with r7:
                 st.markdown(f'''<div class="metric-card">
-                    <b>Vapor Pressure ($p_v$)</b><br>
+                    <b>Vapor Pressure (pv)</b><br>
                     <span style="font-size: 1.4rem; color:#9A3412;">{vapor_p:.2f}</span> {pres_unit}
                 </div>''', unsafe_allow_html=True)
 
@@ -209,6 +212,7 @@ with tab2:
                 tdp = psychrolib.GetTDewPointFromRelHum(t, rh_f)
                 w = psychrolib.GetHumRatioFromRelHum(t, rh_f, current_press)
                 h = psychrolib.GetMoistAirEnthalpy(t, w)
+                if "SI" in unit_system: h /= 1000.0
                 data.append({
                     f"Dry-Bulb ({temp_unit})": round(t, 2),
                     "RH (%)": table_rh,
@@ -228,8 +232,8 @@ with tab3:
     **DewPoint** is built using rigorous thermodynamic relations established by **Psychrolib** and ASHRAE algorithms. 
     It computes air-water vapor mixture properties essential for chemical engineering, HVAC design, drying operations, and environmental conditioning.
     
-    * **Dry-Bulb Temperature ($T_{db}$):** The true thermodynamic temperature of moist air.
-    * **Wet-Bulb Temperature ($T_{wb}$):** Temperature measured by a thermometer covered in a water-saturated wick exposed to airflow.
-    * **Dew-Point Temperature ($T_{dp}$):** The temperature to which air must be cooled to become saturated with water vapor.
-    * **Humidity Ratio ($W$):** Mass of water vapor per unit mass of dry air.
+    * **Dry-Bulb Temperature (Tdb):** The true thermodynamic temperature of moist air.
+    * **Wet-Bulb Temperature (Twb):** Temperature measured by a thermometer covered in a water-saturated wick exposed to airflow.
+    * **Dew-Point Temperature (Tdp):** The temperature to which air must be cooled to become saturated with water vapor.
+    * **Humidity Ratio (W):** Mass of water vapor per unit mass of dry air.
     """, unsafe_allow_html=True)
