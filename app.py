@@ -60,24 +60,23 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # --- SIDEBAR CONFIGURATION ---
-st.sidebar.markdown("### ⚙️ Engine Settings & Units")
 unit_system = st.sidebar.selectbox("Unit System", ["SI (°C, kPa, kg/kg)", "IP (°F, psi, lb/lb)"])
 
 if "SI" in unit_system:
     psychrolib.SetUnitSystem(psychrolib.SI)
     temp_unit = "°C"
     pres_unit = "kPa"
-    hum_unit = "kg water / kg dry air"
-    enthalpy_unit = "kJ / kg dry air"
-    vol_unit = "m³ / kg dry air"
+    hum_unit = "kg / kg"
+    enthalpy_unit = "kJ / kg"
+    vol_unit = "m³ / kg"
     default_pres = 101.325
 else:
     psychrolib.SetUnitSystem(psychrolib.IP)
     temp_unit = "°F"
     pres_unit = "psi"
-    hum_unit = "lb water / lb dry air"
-    enthalpy_unit = "BTU / lb dry air"
-    vol_unit = "ft³ / lb dry air"
+    hum_unit = "lb / lb"
+    enthalpy_unit = "BTU / lb"
+    vol_unit = "ft³ / lb"
     default_pres = 14.696
 
 st.sidebar.markdown("---")
@@ -166,7 +165,7 @@ with tab1:
             with r4:
                 st.markdown(f'''<div class="metric-card">
                     <b>Humidity Ratio (W)</b><br>
-                    <span style="font-size: 1.1rem; color:#9A3412;">{hum_ratio:.5f}</span><br><span style="font-size:0.75rem;">{hum_unit}</span>
+                    <span style="font-size: 1.2rem; color:#9A3412;">{hum_ratio:.5f}</span> {hum_unit}
                 </div>''', unsafe_allow_html=True)
 
             r5, r6, r7 = st.columns(3)
